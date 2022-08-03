@@ -2,22 +2,30 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"github.com/han-joker/apigo/command"
+	"os"
+	"strings"
 )
 
-var argH bool
+var apigoFlagSet = flag.NewFlagSet(command.MainCmdName, flag.ContinueOnError)
 
 func init() {
-	flag.BoolVar(&argH, "h", false, "Show help information.")
+	apigoFlagSet.Usage = func() {
+		fmt.Println()
+		fmt.Print(command.MainHelpMessage())
+	}
 }
 
 func main() {
-	flag.Parse()
-	if flag.NArg() == 0 {
-		flag.PrintDefaults()
+	if len(os.Args) == 1 {
+		fmt.Print(command.MainHelpMessage())
 		return
 	}
-	if argH {
-		flag.PrintDefaults()
+
+	if err := apigoFlagSet.Parse(os.Args[1:]); err != nil {
 		return
 	}
+
+	command.Run(strings.ToLower(os.Args[1]))
 }
