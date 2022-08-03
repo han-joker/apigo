@@ -3,29 +3,29 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/han-joker/apigo/command"
+	"github.com/han-joker/apigo/commands"
 	"os"
 	"strings"
 )
 
-var apigoFlagSet = flag.NewFlagSet(command.MainCmdName, flag.ContinueOnError)
+var mainFlagSet = flag.NewFlagSet(commands.MainCmdName, flag.ContinueOnError)
 
 func init() {
-	apigoFlagSet.Usage = func() {
+	mainFlagSet.Usage = func() {
 		fmt.Println()
-		fmt.Print(command.MainHelpMessage())
+		fmt.Print(commands.MainHelpMessage())
 	}
 }
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Print(command.MainHelpMessage())
+		fmt.Print(commands.MainHelpMessage())
 		return
 	}
 
-	if err := apigoFlagSet.Parse(os.Args[1:]); err != nil {
+	if err := mainFlagSet.Parse(os.Args[1:]); err != nil {
 		return
 	}
 
-	command.Run(strings.ToLower(os.Args[1]))
+	commands.Run(strings.ToLower(os.Args[1]))
 }

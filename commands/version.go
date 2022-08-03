@@ -1,14 +1,12 @@
-package command
+package commands
 
 import (
 	"flag"
 	"fmt"
 )
 
-const versionName = "version"
-
 func init() {
-	Register(NewCmdVersion(versionName, versionIntro))
+	Register(NewCmdVersion("version", versionIntro))
 }
 
 type CmdVersion struct {

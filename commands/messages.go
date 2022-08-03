@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"fmt"
@@ -7,11 +7,11 @@ import (
 const MainCmdName = "ApiGo"
 const MainCmd = "apigo"
 
-const commandNotExists = MainCmdName + " %s: unknown command\n"
+const commandNotExists = MainCmdName + " %s: unknown commands\n"
 
 var mainHelpMessage = MainCmdName + " is a scaffold for build APIs based on go frameworks." + "\n" +
 	"Usage:" + "\n" +
-	"\t" + MainCmd + " <command> [arguments]" + "\n" +
+	"\t" + MainCmd + " <commands> [arguments]" + "\n" +
 	"Examples:" + "\n" +
 	"\t" + MainCmd + " build:api -conf api.json" + "\n"
 
@@ -30,3 +30,6 @@ func MainHelpMessage() string {
 const versionIntro = "print " + MainCmdName + " version"
 const versionFlagLUsage = "lists the available versions"
 const versionOutputTemplate = MainCmdName + " version: %s\n"
+
+// init messages
+const initIntro = "init project's structure"
