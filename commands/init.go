@@ -1,9 +1,9 @@
 package commands
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
-	"io"
 	"io/fs"
 	"log"
 	"os"
@@ -17,12 +17,13 @@ func init() {
 type CmdInit struct {
 	Cmd
 	Flags struct {
-		Path string
+		Mod string
 	}
 }
 
 func (cmd *CmdInit) initFlagSet() {
-	cmd.FlagSet = flag.NewFlagSet(cmd.Name, flag.ContinueOnError)
+	cmd.FlagSet = flag.NewFlagSet(cmd.Name, flag.ExitOnError)
+	cmd.FlagSet.StringVar(&cmd.Flags.Mod, "mod", "", "the mod name of project")
 }
 
 func NewCmdInit(name, intro string) *CmdInit {
@@ -35,25 +36,35 @@ func NewCmdInit(name, intro string) *CmdInit {
 }
 
 func (cmd *CmdInit) Run() {
-
-	if err := cmd.FlagSet.Parse(os.Args[2:]); err != nil {
-		return
-	}
-
 	dst := cmd.FlagSet.Arg(0)
 	if dst == "" {
 		dst = "."
+		cmd.FlagSet.Parse(os.Args[2:])
+	} else {
+		cmd.FlagSet.Parse(os.Args[3:])
+	}
+	if dst == "." {
+		log.Println(". is not allowed in testing")
+		return
 	}
 
-	templatePath := "./templates/gin"
-	if err := CopyDir(templatePath, dst); err != nil {
+	if cmd.Flags.Mod == "" {
+		cmd.Flags.Mod = dst
+	}
+	const PhMN = "PH_ModuleName_PH"
+	replaces := map[string]string{
+		PhMN: cmd.Flags.Mod,
+	}
+
+	templatePath := "../apigo_layout"
+	if err := CopyLayout(templatePath, dst, replaces); err != nil {
 		log.Fatalln(err)
 	}
 
 	fmt.Println("init success")
 }
 
-func CopyDir(src, dst string) error {
+func CopyLayout(src, dst string, replaces map[string]string) error {
 	src, dst = filepath.Clean(src), filepath.Clean(dst)
 
 	if dst != "." {
@@ -76,22 +87,22 @@ func CopyDir(src, dst string) error {
 				return err
 			}
 		} else {
-			srcFile, err := os.Open(src + string(os.PathSeparator) + path)
+
+			// replace placeholder
+			srcBytes, err := os.ReadFile(src + string(os.PathSeparator) + path)
 			if err != nil {
 				return err
 			}
-			defer srcFile.Close()
-			dstFile, err := os.OpenFile(dst+string(os.PathSeparator)+path, os.O_WRONLY|os.O_CREATE, 0750)
-			if err != nil {
-				return err
+			for f, r := range replaces {
+				srcBytes = bytes.ReplaceAll(srcBytes, []byte(f), []byte(r))
 			}
-			defer dstFile.Close()
-			if _, err := io.Copy(dstFile, srcFile); err != nil {
+
+			// write new file
+			if err := os.WriteFile(dst+string(os.PathSeparator)+path, srcBytes, 0750); err != nil {
 				return err
 			}
 		}
 		return nil
 	})
-	log.Println(err)
 	return err
 }
